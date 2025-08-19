@@ -1,0 +1,55 @@
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import { config } from "./config/env";
+import { connectDB } from "./config/db";
+import { routes } from "./routes";
+import { errorHandler, notFound } from "./middlewares/errorHandler";
+
+const app = express();
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(morgan("combined"));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // limit each IP to 100 requests per windowMs
+// });
+// app.use(limiter);
+
+// Routes
+app.use("/api", routes);
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+// Start server
+const startServer = async (): Promise<void> => {
+  try {
+    await connectDB();
+
+    app.listen(config.port, () => {
+      console.log(`Server running on port ${config.port}`);
+      console.log(`Environment: ${config.nodeEnv}`);
+      console.log(`External API: ${config.bestApiUrl}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err: Error) => {
+  console.error("Unhandled Rejection:", err);
+  process.exit(1);
+});
+
+export { app, startServer };
