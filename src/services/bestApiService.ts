@@ -2,7 +2,7 @@ import axios from "axios";
 import { config } from "../config/env";
 import { IBitmap } from "../models/Bitmap";
 
-interface ExternalApiResponse {
+export interface ExternalApiResponse {
   data: IBitmap[];
   blockHeight: Number;
 }
@@ -23,7 +23,7 @@ export class BestApiService {
           count,
         },
         headers: {
-          "x-api-key": config.bestApiUrl,
+          "x-api-key": config.bestApiKey,
         },
         timeout: 10000, // 10 seconds timeout
       });
