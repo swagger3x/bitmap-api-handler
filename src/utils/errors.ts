@@ -26,3 +26,9 @@ export class ExternalApiError extends CustomError {
     super(message, 502);
   }
 }
+
+export class DatabaseError extends CustomError {
+  constructor(message: string = "Database error") {
+    super(message);
+  }
+}

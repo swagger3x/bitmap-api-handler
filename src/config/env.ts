@@ -6,6 +6,7 @@ interface Config {
   port: number;
   mongoURI: string;
   bestApiUrl: string;
+  bestApiKey: string;
   nodeEnv: string;
 }
 
@@ -15,5 +16,6 @@ export const config: Config = {
   bestApiUrl:
     process.env.EXTERNAL_API_URL ||
     "https://api.bestinslot.xyz/v3/collection/bitmap/inscriptions",
+  bestApiKey: process.env.BEST_API_KEY || "",
   nodeEnv: process.env.NODE_ENV || "development",
 };
