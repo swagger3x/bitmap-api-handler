@@ -16,7 +16,10 @@ const httpServer = createServer(app);
 // Socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://192.168.2.34:5173",
+    origin:
+      config.nodeEnv === "production"
+        ? config.clientUrl
+        : "http://192.168.2.34:5173",
     methods: ["GET", "POST"],
   },
 });
