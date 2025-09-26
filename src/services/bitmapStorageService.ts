@@ -94,7 +94,7 @@ export class BitmapStorage {
         _id: "collection_state",
         last_offset: offset,
         block_height: block_height,
-        total_processed: offset + 100,
+        total_processed: offset,
       };
 
       const result = await this.StateModel.findOneAndUpdate(
@@ -136,12 +136,27 @@ export class BitmapStorage {
     }
   }
 
-  static async getBitmapByNumber(bitmap_number: Number): Promise<IBitmap> {
+  async getBitmapByNumber(bitmap_number: number): Promise<IBitmap> {
     try {
-      const bitmap = await Bitmap.findOne({ bitmap_number });
+      const bitmap = await this.BitmapModel.findOne({ bitmap_number });
       if (!bitmap) {
         throw new NotFoundError("Bitmap not found");
       }
+      return bitmap;
+    } catch (error) {
+      if (error instanceof MongooseError) {
+        throw new DatabaseError(`Database operation failed: ${error.message}`);
+      }
+      throw new DatabaseError(`Unexpected database error: ${error}`);
+    }
+  }
+
+  async getBitmapByID(inscription_id: string): Promise<IBitmap | null> {
+    try {
+      const bitmap = await this.BitmapModel.findOne({ inscription_id });
+      // if (!bitmap) {
+      //   throw new NotFoundError("Bitmap not found");
+      // }
       return bitmap;
     } catch (error) {
       if (error instanceof MongooseError) {

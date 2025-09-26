@@ -12,7 +12,6 @@ const BitmapStateSchema: Schema = new Schema(
     _id: {
       type: String,
       required: true,
-      unique: true,
     },
     block_height: {
       type: Number,
@@ -33,6 +32,6 @@ const BitmapStateSchema: Schema = new Schema(
 );
 
 export const BitmapState = mongoose.model<IBitmapState>(
-  "state",
+  "states",
   BitmapStateSchema
 );

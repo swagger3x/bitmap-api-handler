@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { BitmapService } from "../services/bitmapService";
 import { sendResponse } from "../utils/response";
-import { NotFoundError, ExternalApiError } from "../utils/errors";
+import {
+  NotFoundError,
+  ExternalApiError,
+  DatabaseError,
+} from "../utils/errors";
 
 export class BitmapController {
   static async syncBitmaps(req: Request, res: Response): Promise<void> {
@@ -11,6 +15,23 @@ export class BitmapController {
       sendResponse(res, 200, "Bitmaps synchronized successfully", {});
     } catch (error: any) {
       if (error instanceof ExternalApiError) {
+        sendResponse(res, error.statusCode, error.message);
+      } else {
+        sendResponse(res, 500, "Internal server error");
+      }
+    }
+  }
+
+  static async validateBitmaps(req: Request, res: Response): Promise<void> {
+    try {
+      const inscriptions = req.body;
+      const validBitmaps = await BitmapService.validateBitmaps(inscriptions);
+
+      sendResponse(res, 200, "Bitmap validated successfully", validBitmaps);
+    } catch (error: any) {
+      if (error instanceof DatabaseError) {
+        sendResponse(res, error.statusCode, error.message);
+      } else if (error instanceof NotFoundError) {
         sendResponse(res, error.statusCode, error.message);
       } else {
         sendResponse(res, 500, "Internal server error");

@@ -67,4 +67,4 @@ const BitmapSchema: Schema = new Schema(
 BitmapSchema.index({ bitmap_number: 1, inscription_number: 1 });
 BitmapSchema.index({ owner_wallet_addr: 1, bitmap_number: 1 });
 
-export const Bitmap = mongoose.model<IBitmap>("bitmap", BitmapSchema);
+export const Bitmap = mongoose.model<IBitmap>("bitmaps", BitmapSchema);
