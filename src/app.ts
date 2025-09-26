@@ -6,8 +6,30 @@ import { config } from "./config/env";
 import { connectDB } from "./config/db";
 import { routes } from "./routes";
 import { errorHandler, notFound } from "./middlewares/errorHandler";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import orderSocketHandler from "./sockets/orderSocket";
 
 const app = express();
+const httpServer = createServer(app);
+
+// Socket.io
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://192.168.2.34:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  orderSocketHandler(io, socket);
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
 
 // Middleware
 app.use(helmet());
@@ -35,7 +57,7 @@ const startServer = async (): Promise<void> => {
   try {
     await connectDB();
 
-    app.listen(config.port, () => {
+    httpServer.listen(config.port, () => {
       console.log(`Server running on port ${config.port}`);
       console.log(`Environment: ${config.nodeEnv}`);
     });
@@ -51,4 +73,4 @@ process.on("unhandledRejection", (err: Error) => {
   process.exit(1);
 });
 
-export { app, startServer };
+export { app, startServer, io };

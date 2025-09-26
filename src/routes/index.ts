@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { bitmapRoutes } from "./bitmap";
+import { webhookHandler } from "../controllers/webhookHandler";
 
 const router = Router();
 
@@ -14,5 +15,7 @@ router.get("/health", (req, res) => {
     database: "connected", // You might want to add actual DB health check
   });
 });
+
+router.post("/webhook", webhookHandler);
 
 export { router as routes };
