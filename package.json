@@ -23,7 +23,8 @@
     "express-rate-limit": "^8.0.1",
     "helmet": "^8.1.0",
     "mongoose": "^8.17.2",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/axios": "^0.9.36",

@@ -7,6 +7,7 @@ interface Config {
   mongoURI: string;
   bestApiUrl: string;
   bestApiKey: string;
+  clientUrl: string;
   nodeEnv: string;
 }
 
@@ -17,5 +18,6 @@ export const config: Config = {
     process.env.EXTERNAL_API_URL ||
     "https://api.bestinslot.xyz/v3/collection/bitmap/inscriptions",
   bestApiKey: process.env.BEST_API_KEY || "",
+  clientUrl: process.env.CLIENT_URL || "https://ordinals-mint-app.vercel.app",
   nodeEnv: process.env.NODE_ENV || "development",
 };

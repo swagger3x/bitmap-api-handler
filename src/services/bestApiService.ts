@@ -28,7 +28,7 @@ export class BestApiService {
         timeout: 10000, // 10 seconds timeout
       });
 
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error fetching data from external API:", error);
       throw new Error("Failed to fetch data from external API");

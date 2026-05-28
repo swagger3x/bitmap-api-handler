@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { BitmapService } from "../services/bitmapService";
 import { sendResponse } from "../utils/response";
-import { NotFoundError, ExternalApiError } from "../utils/errors";
+import {
+  NotFoundError,
+  ExternalApiError,
+  DatabaseError,
+} from "../utils/errors";
 
 export class BitmapController {
   static async filterBitmaps(req: Request, res: Response): Promise<void> {
