@@ -32,6 +32,7 @@ const BitmapStateSchema: Schema = new Schema(
 );
 
 export const BitmapState = mongoose.model<IBitmapState>(
-  "states",
-  BitmapStateSchema
+  "state",
+  BitmapStateSchema,
+  "state",
 );

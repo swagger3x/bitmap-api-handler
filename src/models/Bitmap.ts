@@ -60,11 +60,11 @@ const BitmapSchema: Schema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Compound indexes for better query performance
 BitmapSchema.index({ bitmap_number: 1, inscription_number: 1 });
 BitmapSchema.index({ owner_wallet_addr: 1, bitmap_number: 1 });
 
-export const Bitmap = mongoose.model<IBitmap>("bitmaps", BitmapSchema);
+export const Bitmap = mongoose.model<IBitmap>("bitmap", BitmapSchema, "bitmap");
