@@ -1,5 +1,6 @@
 import { Bitmap, IBitmap } from "../models/Bitmap";
 import { Block, IBlock } from "../models/Blocks";
+import { BitmapState } from "../models/State";
 import { BestApiService } from "./bestApiService";
 import { BitmapStorage } from "./bitmapStorageService";
 
@@ -34,22 +35,36 @@ export class BitmapService {
     } catch (error) {}
   }
 
-  static async filterValidBitmaps(
-    inscriptionIds: string[],
-  ): Promise<IBitmapEnriched[]> {
+  static async filterValidBitmaps(inscriptionIds: string[]): Promise<{
+    bitmaps: IBitmapEnriched[];
+    last_synced_at: Date | null;
+    last_synced_block_height: number | null;
+  }> {
     const validBitmaps = (await Bitmap.find({
       inscription_id: { $in: inscriptionIds },
     })) as IBitmap[];
 
-    const enriched = await Promise.all(
-      validBitmaps.map(async (bitmap) => {
-        const block = await Block.findOne({
-          height: bitmap.genesis_height.toString(),
-        });
-        return { ...bitmap.toObject(), block } as IBitmapEnriched;
-      }),
+    // Batch the block lookup: two indexed queries total regardless of wallet size
+    const heights = [
+      ...new Set(validBitmaps.map((b) => b.genesis_height.toString())),
+    ];
+    const blocks = await Block.find({ height: { $in: heights } });
+    const blockByHeight = new Map(blocks.map((b) => [b.height, b]));
+
+    const bitmaps = validBitmaps.map(
+      (bitmap) =>
+        ({
+          ...bitmap.toObject(),
+          block: blockByHeight.get(bitmap.genesis_height.toString()) ?? null,
+        }) as IBitmapEnriched,
     );
 
-    return enriched;
+    // Index freshness so the frontend can tell users how stale a miss can be
+    const state = await BitmapState.findById("collection_state");
+    return {
+      bitmaps,
+      last_synced_at: state ? (state.get("updatedAt") as Date) : null,
+      last_synced_block_height: state ? state.block_height : null,
+    };
   }
 }

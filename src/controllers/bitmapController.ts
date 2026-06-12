@@ -17,8 +17,8 @@ export class BitmapController {
         return;
       }
 
-      const bitmaps = await BitmapService.filterValidBitmaps(inscription_ids);
-      sendResponse(res, 200, "Bitmaps retrieved successfully", { bitmaps });
+      const result = await BitmapService.filterValidBitmaps(inscription_ids);
+      sendResponse(res, 200, "Bitmaps retrieved successfully", result);
     } catch (error: any) {
       sendResponse(res, 500, "Internal server error");
     }
