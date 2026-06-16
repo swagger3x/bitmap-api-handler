@@ -67,4 +67,15 @@ export class BitmapService {
       last_synced_block_height: state ? state.block_height : null,
     };
   }
+
+  static async recordDysonInscription(
+    bitmapInscriptionId: string,
+    dysonInscriptionId: string,
+  ): Promise<IBitmap | null> {
+    return Bitmap.findOneAndUpdate(
+      { inscription_id: bitmapInscriptionId },
+      { dyson_inscription_id: dysonInscriptionId },
+      { new: true },
+    );
+  }
 }

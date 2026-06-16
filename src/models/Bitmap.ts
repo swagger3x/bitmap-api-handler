@@ -10,6 +10,7 @@ export interface IBitmap extends Document {
   last_sale_price: number | null;
   content_url: string;
   bis_url: string;
+  dyson_inscription_id: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,6 +57,11 @@ const BitmapSchema: Schema = new Schema(
     bis_url: {
       type: String,
       required: true,
+    },
+    dyson_inscription_id: {
+      type: String,
+      default: null,
+      index: true,
     },
   },
   {

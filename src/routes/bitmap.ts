@@ -5,6 +5,7 @@ const router = Router();
 
 router.post("/sync", BitmapController.syncBitmaps);
 router.post("/filter", BitmapController.filterBitmaps);
+router.post("/:inscriptionId/dyson", BitmapController.recordDyson);
 // router.get("/", BitmapController.getAllBitmaps);
 // router.get("/search", BitmapController.searchBitmaps);
 // router.get("/owner/:owner", BitmapController.getBitmapsByOwner);

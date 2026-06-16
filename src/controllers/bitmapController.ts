@@ -24,6 +24,32 @@ export class BitmapController {
     }
   }
 
+  static async recordDyson(req: Request, res: Response): Promise<void> {
+    try {
+      const { inscriptionId } = req.params;
+      const { dyson_inscription_id } = req.body;
+
+      if (!dyson_inscription_id) {
+        sendResponse(res, 400, "dyson_inscription_id is required");
+        return;
+      }
+
+      const updated = await BitmapService.recordDysonInscription(
+        inscriptionId,
+        dyson_inscription_id,
+      );
+
+      if (!updated) {
+        sendResponse(res, 404, "Bitmap not found");
+        return;
+      }
+
+      sendResponse(res, 200, "Dyson inscription recorded", { bitmap: updated });
+    } catch (error: any) {
+      sendResponse(res, 500, "Internal server error");
+    }
+  }
+
   static async syncBitmaps(req: Request, res: Response): Promise<void> {
     try {
       const result = await BitmapService.syncBitmaps();
