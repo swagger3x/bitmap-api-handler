@@ -13,16 +13,18 @@ import orderSocketHandler from "./sockets/orderSocket";
 const app = express();
 const httpServer = createServer(app);
 
+const allowedOrigins =
+  config.nodeEnv === "production"
+    ? [config.clientUrl]
+    : ["http://localhost:5173", "http://127.0.0.1:5173"];
+
+const corsOptions = {
+  origin: allowedOrigins,
+  methods: ["GET", "POST"],
+};
+
 // Socket.io
-const io = new Server(httpServer, {
-  cors: {
-    origin:
-      config.nodeEnv === "production"
-        ? config.clientUrl
-        : "http://192.168.2.34:5173",
-    methods: ["GET", "POST"],
-  },
-});
+const io = new Server(httpServer, { cors: corsOptions });
 
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
@@ -36,7 +38,7 @@ io.on("connection", (socket) => {
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
