@@ -9,6 +9,9 @@ interface Config {
   bestApiKey: string;
   clientUrl: string;
   nodeEnv: string;
+  ordinalsBotUrl: string;
+  platformWallet: string;
+  platformFeeSats: number;
 }
 
 export const config: Config = {
@@ -20,4 +23,7 @@ export const config: Config = {
   bestApiKey: process.env.BEST_API_KEY || "",
   clientUrl: process.env.CLIENT_URL || "https://ordinals-mint-app.vercel.app",
   nodeEnv: process.env.NODE_ENV || "development",
+  ordinalsBotUrl: process.env.ORDINALS_BOT_URL || "https://api.ordinalsbot.com",
+  platformWallet: process.env.PLATFORM_WALLET_ADDRESS || "",
+  platformFeeSats: parseInt(process.env.PLATFORM_FEE_SATS || "12024"),
 };

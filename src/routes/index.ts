@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { bitmapRoutes } from "./bitmap";
+import { inscriptionRoutes } from "./inscription";
 import { webhookHandler } from "../controllers/webhookHandler";
 
 const router = Router();
 
 router.use("/bitmaps", bitmapRoutes);
+router.use("/inscriptions", inscriptionRoutes);
 
 // Health check endpoint
 router.get("/health", (req, res) => {
