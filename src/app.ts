@@ -2,13 +2,15 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { config } from "./config/env";
+import rateLimit from "express-rate-limit";
+import { config, assertProductionConfig } from "./config/env";
 import { connectDB } from "./config/db";
 import { routes } from "./routes";
 import { errorHandler, notFound } from "./middlewares/errorHandler";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import orderSocketHandler from "./sockets/orderSocket";
+import { startReconciliationJob } from "./jobs/reconciliation";
 
 const app = express();
 const httpServer = createServer(app);
@@ -43,12 +45,14 @@ app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 100, // limit each IP to 100 requests per windowMs
-// });
-// app.use(limiter);
+// Rate limiting on the order flow (creation, PSBT submission)
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 60, // limit each IP to 60 order-flow requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api/orders", orderLimiter);
 
 // Routes
 app.use("/api", routes);
@@ -60,11 +64,14 @@ app.use(errorHandler);
 // Start server
 const startServer = async (): Promise<void> => {
   try {
+    assertProductionConfig();
     await connectDB();
+    startReconciliationJob();
 
     httpServer.listen(config.port, () => {
       console.log(`Server running on port ${config.port}`);
       console.log(`Environment: ${config.nodeEnv}`);
+      console.log(`Bitcoin network: ${config.bitcoinNetwork}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
