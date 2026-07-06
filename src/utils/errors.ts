@@ -21,6 +21,12 @@ export class ValidationError extends CustomError {
   }
 }
 
+export class ConflictError extends CustomError {
+  constructor(message: string = "Conflict") {
+    super(message, 409);
+  }
+}
+
 export class ExternalApiError extends CustomError {
   constructor(message: string = "External API error") {
     super(message, 502);
