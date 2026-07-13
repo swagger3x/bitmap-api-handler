@@ -72,6 +72,10 @@ const startServer = async (): Promise<void> => {
       console.log(`Server running on port ${config.port}`);
       console.log(`Environment: ${config.nodeEnv}`);
       console.log(`Bitcoin network: ${config.bitcoinNetwork}`);
+      console.log(
+        `Platform wallet: ${config.platformWallet || "(not set)"} (fee: ${config.platformFeeSats} sats)`,
+      );
+      console.log(`OrdinalsBot: ${config.ordinalsBotUrl}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
