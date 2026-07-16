@@ -59,17 +59,27 @@ const obStateToInternal = (obState: string): OrderState | null => {
   }
 };
 
-// Derives our internal state from an OrdinalsBot order. GET /order carries no
-// lifecycle `state` string — only boolean flags plus `tx`/`sent` — while
-// webhook payloads carry `state`. Flags win (they are the authoritative
-// re-fetched data); the charge address appearing is the "ready for payment"
-// signal.
+// Derives our internal state from an OrdinalsBot order (shape verified
+// against the live mainnet API). Terminal signals are checked FIRST — a
+// completed order still has paid=true, so flag checks must never shadow the
+// completion signals (`completed`, per-file tx, or state === "completed").
 const deriveRemoteState = (obOrder: OrdinalsBotOrder): OrderState | null => {
-  if (obOrder.sent || obOrder.tx?.inscription) return "completed";
+  if (
+    obOrder.completed ||
+    obOrder.sent ||
+    obOrder.tx?.inscription ||
+    obOrder.files?.[0]?.tx?.inscription
+  ) {
+    return "completed";
+  }
   if (obOrder.expired) return "expired";
   if (obOrder.underpaid) return "failed"; // single exact-amount PSBT — needs manual review
+  if (typeof obOrder.state === "string") {
+    const mapped = obStateToInternal(obOrder.state);
+    if (mapped !== null) return mapped;
+    // unknown state string — fall through to the flag heuristics
+  }
   if (obOrder.paid) return "confirming";
-  if (typeof obOrder.state === "string") return obStateToInternal(obOrder.state);
   if (obOrder.charge?.address) return "awaiting_signature";
   return "pending_order";
 };
@@ -199,11 +209,13 @@ export class OrderService {
     // Compact view of the remote signals for logs/audit trail
     const remote = {
       state: obOrder.state,
+      completed: obOrder.completed,
       paid: obOrder.paid,
       underpaid: obOrder.underpaid,
       expired: obOrder.expired,
       sent: obOrder.sent,
-      inscription: obOrder.tx?.inscription,
+      inscription:
+        obOrder.files?.[0]?.tx?.inscription ?? obOrder.tx?.inscription,
       chargeAddress: obOrder.charge?.address,
     };
 
@@ -250,8 +262,14 @@ export class OrderService {
     if (next === "awaiting_signature") {
       await this.ensurePsbt(order, trigger);
     } else if (next === "completed") {
-      // Inscription data lives on the top-level `tx` object of the order
-      const inscriptionId = obOrder.tx?.inscription ?? null;
+      // Mainnet: inscription data lives per-file; legacy: top-level tx
+      const file = obOrder.files?.[0];
+      const inscriptionId =
+        file?.tx?.inscription ??
+        file?.inscriptionId ??
+        file?.inscription_id ??
+        obOrder.tx?.inscription ??
+        null;
       if (inscriptionId) {
         order.dyson_inscription_id = inscriptionId;
         try {

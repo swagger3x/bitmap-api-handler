@@ -11,17 +11,31 @@ import { ExternalApiError } from "../utils/errors";
 export interface OrdinalsBotOrder {
   id: string;
   status?: string; // API envelope: 'ok' | 'error'
-  state?: string; // webhook payloads only
+  state?: string; // lifecycle string, e.g. "waiting-payment", "mempool", "completed"
+  completed?: boolean; // top-level completion flag (mainnet GET /order)
   paid?: boolean; // payment received
   underpaid?: boolean; // payment received but insufficient
   expired?: boolean; // payment window elapsed without payment
-  sent?: string; // txid — inscription delivered to receive address
+  sent?: string; // legacy: txid once delivered
   tx?: {
     commit?: string;
     reveal?: string;
-    inscription?: string; // the inscription id
+    inscription?: string;
     fees?: number;
   };
+  // Mainnet GET /order carries inscription data per file (verified against
+  // the live API): files[0].tx.inscription / files[0].inscriptionId
+  files?: {
+    inscriptionId?: string;
+    inscription_id?: string;
+    sent?: string;
+    status?: string;
+    tx?: {
+      inscription?: string;
+      reveal?: string;
+      totalFees?: number;
+    };
+  }[];
   charge?: {
     // address appears with a delay after order creation — poll GET /order
     address?: string;
