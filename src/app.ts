@@ -68,8 +68,8 @@ const startServer = async (): Promise<void> => {
     await connectDB();
     startReconciliationJob();
 
-    httpServer.listen(config.port, () => {
-      console.log(`Server running on port ${config.port}`);
+    httpServer.listen(config.port, config.host, () => {
+      console.log(`Server running on ${config.host}:${config.port}`);
       console.log(`Environment: ${config.nodeEnv}`);
       console.log(`Bitcoin network: ${config.bitcoinNetwork}`);
       console.log(

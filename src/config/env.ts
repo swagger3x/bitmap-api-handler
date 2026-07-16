@@ -6,6 +6,7 @@ export type BitcoinNetwork = "mainnet" | "testnet" | "testnet4" | "signet";
 
 interface Config {
   port: number;
+  host: string;
   mongoURI: string;
   bestApiUrl: string;
   bestApiKey: string;
@@ -33,6 +34,9 @@ const bitcoinNetwork = (process.env.BITCOIN_NETWORK ||
 
 export const config: Config = {
   port: parseInt(process.env.PORT || "5000"),
+  // Bind address. Set HOST=127.0.0.1 in production so the backend is only
+  // reachable through the nginx reverse proxy, never directly from outside.
+  host: process.env.HOST || "0.0.0.0",
   mongoURI: process.env.MONGODB_URI || "mongodb://localhost:27017/bitmaps",
   bestApiUrl:
     process.env.EXTERNAL_API_URL ||

@@ -7,10 +7,18 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  console.error(error);
-
   const statusCode = error.statusCode || 500;
   const message = error.message || "Internal Server Error";
+
+  // Full stack traces only for server errors; expected 4xx (scanner probes,
+  // bad requests) get a one-liner so they don't bury real problems in the logs.
+  if (statusCode >= 500) {
+    console.error(error);
+  } else {
+    console.warn(
+      `[http] ${statusCode} ${req.method} ${req.originalUrl} — ${message}`,
+    );
+  }
 
   res.status(statusCode).json({
     success: false,
