@@ -43,6 +43,7 @@ export interface IOrder extends Document {
   platform_fee: { address: string; amount: number };
   expected_outputs: { address: string; value: number }[];
   psbt_base64: string | null;
+  psbt_error: string | null;
   fee_rate: number | null;
   txid: string | null;
   dyson_inscription_id: string | null;
@@ -106,6 +107,12 @@ const OrderSchema: Schema = new Schema(
       default: [],
     },
     psbt_base64: {
+      type: String,
+      default: null,
+    },
+    // Last PSBT build failure (e.g. insufficient funds) — shown to the user
+    // after refresh; cleared when a build succeeds
+    psbt_error: {
       type: String,
       default: null,
     },

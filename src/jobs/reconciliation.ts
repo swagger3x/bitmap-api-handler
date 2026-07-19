@@ -18,6 +18,15 @@ const reconcileOrder = async (order: IOrder): Promise<void> => {
       order.ordinalsbot_order_id,
     );
     await OrderService.applyRemoteState(order, obOrder, "reconcile");
+
+    // Retry a failed PSBT build (e.g. insufficient funds at the time): the
+    // no-regression guard above never re-enters awaiting_signature, so
+    // without this an order would only get a new build attempt on refresh.
+    // Makes wallet top-ups self-healing within one sweep interval.
+    if (order.state === "awaiting_signature" && !order.psbt_base64) {
+      await OrderService.ensurePsbt(order, "reconcile");
+      await order.save();
+    }
   } catch (err) {
     console.error(
       `[reconcile] failed to reconcile ${order.ordinalsbot_order_id}:`,

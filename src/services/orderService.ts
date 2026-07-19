@@ -99,6 +99,8 @@ const publicOrder = (order: IOrder) => ({
   bitmapInscriptionId: order.bitmap_inscription_id,
   bitmapNumber: order.bitmap_number,
   psbt: order.state === "awaiting_signature" ? order.psbt_base64 : null,
+  psbtError: order.state === "awaiting_signature" ? order.psbt_error : null,
+  paymentAddress: order.user_payment_address,
   chargeAmount: order.charge.amount,
   platformFee: order.platform_fee.amount,
   txid: order.txid,
@@ -311,17 +313,22 @@ export class OrderService {
     try {
       const built = await PsbtService.buildPaymentPsbt(order);
       order.psbt_base64 = built.psbtBase64;
+      order.psbt_error = null;
       order.fee_rate = built.feeRate;
       order.expected_outputs = built.expectedOutputs;
       logEvent(order, "psbt_built", trigger, {
         feeRate: built.feeRate,
         outputs: built.expectedOutputs,
       });
+      // Push the fresh PSBT to any live page (e.g. after a reconcile retry
+      // succeeds once the user's top-up lands) so signing starts immediately.
+      emitOrderUpdate(order);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(
         `[psbt] build failed for ${order.ordinalsbot_order_id}: ${message}`,
       );
+      order.psbt_error = message;
       logEvent(order, "psbt_build_failed", trigger, { error: message });
       await order.save();
       emitOrderUpdate(order, { error: "psbt_build_failed", message });
