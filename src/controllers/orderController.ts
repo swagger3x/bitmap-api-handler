@@ -80,6 +80,15 @@ export class OrderController {
     }
   }
 
+  static async cancel(req: Request, res: Response): Promise<void> {
+    try {
+      const order = await OrderService.cancelOrder(req.params.id);
+      sendResponse(res, 200, "Order cancelled", OrderService.toPublic(order));
+    } catch (error) {
+      handleError(res, error, "cancel failed");
+    }
+  }
+
   static async submitPsbt(req: Request, res: Response): Promise<void> {
     try {
       const { signedPsbt } = req.body;

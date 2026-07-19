@@ -374,6 +374,30 @@ export class OrderService {
     return order;
   }
 
+  // User-initiated cancel — allowed ONLY before payment (pending_order /
+  // awaiting_signature). Terminal `abandoned` frees the bitmap for a fresh
+  // mint and stops resume/reconciliation immediately. After broadcast the
+  // money has moved and the inscription proceeds — cancel is rejected.
+  static async cancelOrder(orderId: string): Promise<IOrder> {
+    const order = await Order.findOne({ ordinalsbot_order_id: orderId });
+    if (!order) throw new NotFoundError("Order not found");
+    const cancellable =
+      order.state === "pending_order" || order.state === "awaiting_signature";
+    if (!cancellable) {
+      throw new ConflictError(
+        `Order cannot be cancelled once payment has been sent (state: ${order.state})`,
+      );
+    }
+    order.state = "abandoned";
+    logEvent(order, "state_transition", "user", {
+      reason: "cancelled by user",
+    });
+    await order.save();
+    emitOrderUpdate(order);
+    console.log(`[order] ${order.ordinalsbot_order_id}: cancelled by user`);
+    return order;
+  }
+
   static async getOrder(orderId: string): Promise<IOrder> {
     const order = await Order.findOne({ ordinalsbot_order_id: orderId });
     if (!order) throw new NotFoundError("Order not found");

@@ -7,5 +7,6 @@ router.post("/", OrderController.create);
 router.get("/active", OrderController.getActive);
 router.get("/:id", OrderController.getOne);
 router.post("/:id/psbt", OrderController.submitPsbt);
+router.post("/:id/cancel", OrderController.cancel);
 
 export { router as orderRoutes };
